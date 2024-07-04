@@ -3,7 +3,9 @@
 Plugin Name: Facebook Login Plugin
 Description: Integration of Facebook login functionality into WordPress using shortcode.
 Version: 1.0
+Company: CodeWooInsider
 Author: Urooj
+Author URI: https://code-woo-insider.free.nf/
 */
 
 // Ensure this file isn't accessed directly
@@ -16,8 +18,8 @@ require_once 'Facebook/autoload.php';
 session_start();
 
 $FBObject = new \Facebook\Facebook([
-    'app_id' => '3679007389007885', // Replace with your actual app id
-    'app_secret' => '722058b05ce08a1d5c22241e0bd78eee', // Replace with your actual app secret
+    'app_id' => ' YOUR_APP_ID', // Replace with your actual app id
+    'app_secret' => 'YOUR_APP_SECRET', // Replace with your actual app secret
     'default_graph_version' => 'v20.0'
 ]);
 $handler = $FBObject->getRedirectLoginHelper();
@@ -100,14 +102,14 @@ function fb_login_callback() {
             wp_set_current_user($new_user_id);
             wp_set_auth_cookie($new_user_id, true);
             wp_redirect(home_url());
-            exit;
+            exit();
         }
     } else {
         $user = get_user_by('email', $user_email);
         wp_set_current_user($user->ID);
         wp_set_auth_cookie($user->ID, true);
         wp_redirect(home_url());
-        exit;
+        exit();
     }
 }
 add_action('wp_ajax_fb_login_callback', 'fb_login_callback');
@@ -118,4 +120,33 @@ add_action('wp_logout', function() {
     wp_redirect(home_url());
     exit();
 });
+
+// Admin notice for the plugin
+function fb_login_plugin_admin_notice() {
+    ?>
+    <div class="notice notice-success is-dismissible">
+        <p>Thank you for using the Facebook Login Plugin by <a href="https://code-woo-insider.free.nf/" target="_blank">CodeWooInsider</a>.</p>
+    </div>
+    <?php
+}
+add_action('admin_notices', 'fb_login_plugin_admin_notice');
+
+// Display admin notice on plugin activation
+function fb_login_plugin_activation_hook() {
+    set_transient('fb_login_plugin_activation_notice', true, 5);
+}
+register_activation_hook(__FILE__, 'fb_login_plugin_activation_hook');
+
+// Show the activation notice
+function fb_login_plugin_show_activation_notice() {
+    if (get_transient('fb_login_plugin_activation_notice')) {
+        ?>
+        <div class="notice notice-success is-dismissible">
+            <p>Thank you for activating the Facebook Login Plugin by <a href="https://code-woo-insider.free.nf/" target="_blank">CodeWooInsider</a>.</p>
+        </div>
+        <?php
+        delete_transient('fb_login_plugin_activation_notice');
+    }
+}
+add_action('admin_notices', 'fb_login_plugin_show_activation_notice');
 ?>
